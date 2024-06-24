@@ -115,11 +115,12 @@ def calculate_slope_intercept(cluster_data):
 
     return slope, intercept
 
+# 유효한 유전자 쌍만을 포함하는 새로운 리스트 생성
+filtered_valid_edges = [combo for combo in valid_edges if combo[0] in all_genes and combo[1] in all_genes]
+
 # bgmm클러스터링 및 네트워크 구축
 G = nx.Graph()
-for combo in combinations(all_genes, 2):
-    if combo not in valid_edges:
-        continue  # 유효한 엣지에 대해서만 bgmm 수행
+for combo in filtered_valid_edges:
     
     #유전자 쌍 정보를 list(combo)로 저장
     selected_genes = merged_data.loc[list(combo)].T
