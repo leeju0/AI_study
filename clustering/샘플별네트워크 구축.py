@@ -118,17 +118,22 @@ def calculate_slope_intercept(cluster_data):
 # 유효한 유전자 쌍만을 포함하는 새로운 리스트 생성
 filtered_valid_edges = [combo for combo in valid_edges if combo[0] in all_genes and combo[1] in all_genes]
 
+# 유효한 유전자 쌍 사전에 대해 데이터 전처리 및 저장
+preprocessed_data = {}
+for combo in filtered_valid_edges:
+    try:
+        selected_genes = merged_data.loc[list(combo)]
+        preprocessed_data[combo] = remove_outliers(selected_genes.T, 0.01)
+    except KeyError as e:
+        print(f"KeyError: {e} - Skipping this gene pair.")
+        
+        
+preprocessed_data
+
 # bgmm클러스터링 및 네트워크 구축
 G = nx.Graph()
-for combo in filtered_valid_edges:
+for combo, data in preprocessed_data.items():
     
-    #유전자 쌍 정보를 list(combo)로 저장
-    selected_genes = merged_data.loc[list(combo)].T
-    
-    #이상치 제거
-    filtered_selected_genes = remove_outliers(selected_genes, 0.01)
-    
-    remaining_samples = len(filtered_selected_genes)
     
     #클러스터링 수행할 수 없는 경우, 에러 출력
     if remaining_samples < 2:
