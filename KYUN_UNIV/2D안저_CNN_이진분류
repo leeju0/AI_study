@@ -1,0 +1,107 @@
+import cv2
+#import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Dropout, Flatten
+from tensorflow.keras.callbacks import ModelCheckpoint,EarlyStopping
+from tensorflow.keras.utils import to_categorical
+
+
+folder1 = "/content/drive/MyDrive/Label"
+folder_list1 = os.listdir(folder1)
+
+folder2 = "/content/drive/MyDrive/Label"
+folder_list2 = os.listdir(folder2)
+img_normal = []
+img_glucoma = []
+label_1 = []
+label_2 = []
+
+for filename in folder_list1 :
+  img_1 = os.path.join(folder1,filename)
+  img1 = cv2.imread(img_1)
+  img_normal.append(img1)
+  label_1.append(0)
+
+for filename in folder_list2 :
+  img_dir2 = os.path.join(folder2,filename)
+  img2 = cv2.imread(img_dir2)
+  img_glucoma.append(img2)
+  label_2.append(1)
+
+
+# Combine the image and label lists
+images = img_normal + img_glucoma
+labels = label_1 + label_2
+train = images
+
+
+resized_images = []
+
+for img in images:
+    
+    resized_img = cv2.resize(img, (512, 512))
+    resized_images.append(resized_img)
+
+“””
+위 resized_images = [] 대신 들어감
+processed_images = []
+for img in images:
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    _, binary = cv2.threshold(gray, 10, 255, cv2.THRESH_BINARY)
+    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if contours:
+        largest_contour = max(contours, key=cv2.contourArea)
+        x, y, w, h = cv2.boundingRect(largest_contour)
+        roi = img[y:y+h, x:x+w]
+        resized_roi = cv2.resize(roi, (256, 256))
+        processed_images.append(resized_roi)
+    else:
+        resized_roi = cv2.resize(img, (256, 256))  
+        processed_images.append(resized_roi)
+
+
+X = np.array(processed_images).astype('float32') / 255
+y = np.array(labels)
+
+# Display a preprocessed image
+plt.imshow(cv2.cvtColor(processed_images[4], cv2.COLOR_BGR2RGB))
+plt.title("Preprocessed Image")
+plt.axis('off')
+plt.show()
+
+“””
+
+X_train, X_test, y_train, y_test = train_test_split(resized_images, labels, test_size=0.2, shuffle=True)
+
+# Convert lists to numpy arrays if not already converted
+X_train = np.array(X_train)
+X_test = np.array(X_test)
+y_train = np.array(y_train)
+y_test = np.array(y_test)
+X_train = X_train.reshape(-1, 256, 256, 3).astype('float32') / 255
+X_test = X_test.reshape(-1, 256, 256, 3).astype('float32') / 255
+
+
+model = Sequential()
+model.add(Conv2D(32, kernel_size=(3,3), input_shape=(256, 256, 3),
+                 activation='relu'))
+model.add(Conv2D(64, (3,3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2,2)))
+model.add(Dropout(0.25))
+model.add(Flatten()) 
+model.add(Dense(128,  activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(1, activation='sigmoid'))
+
+
+# Compile the model
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# Train the model
+history = model.fit(X_train, y_train, validation_split=0.2, epochs=30, batch_size=32)
+
+
+
