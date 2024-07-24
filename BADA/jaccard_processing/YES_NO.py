@@ -140,3 +140,11 @@ no_count = len(subtype_to_samples['NO'])
 print("Number of 'YES' subtype sample:", yes_count)
 print("Number of 'NO' subtype sample:", no_count)
 
+# 서브타입별로 샘플 몇개인지 출력하기
+
+yes_count = len(subtype_to_samples['YES'])
+no_count = len(subtype_to_samples['NO'])
+
+print("Number of 'YES' subtype sample:", yes_count)
+print("Number of 'NO' subtype sample:", no_count)
+
